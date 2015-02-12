@@ -101,7 +101,7 @@ def get_annotator(annotation):
 
 class Annotation(object):
     def __init__(self, mention_id, spans, text, annotator):
-        self.id = ANNOTATION_ID_ROOT + 'TODO!' #str(uuid.uuid4()) # random uuid
+        self.id = ANNOTATION_ID_ROOT + str(uuid.uuid4()) # random uuid
         self.mention_id = mention_id
         self.spans = spans
         self.text = text
