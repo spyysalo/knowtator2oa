@@ -17,6 +17,12 @@ DOCUMENT_ID_ROOT = 'http://craft.ucdenver.edu/document/PMID-'
 ANNOTATION_ID_ROOT = 'http://craft.ucdenver.edu/annotation/'
 ANNOTATOR_ID_ROOT = 'http://kabob.ucdenver.edu/annotator/'
 
+# Mapping to resolvable annotator URIs
+annotator_mapping = {
+    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology':  'http://compbio.ucdenver.edu/Hunter_lab/',
+    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology,UCDenver':  'http://compbio.ucdenver.edu/Hunter_lab/',
+}
+
 # Attribute name constants
 a_id = 'id'
 a_source = 'textSource'
@@ -248,11 +254,13 @@ def convert(annotations, mentions, slots, doc_id):
     for annotation in annotations:
         mention = mention_by_id[annotation.mention_id]
         values = mention.values(slot_by_id)
+        annotator = annotation.annotator
+        annotator = annotator_mapping.get(annotator, annotator)
         converted.append({
             oa_id:          annotation.id,
             oa_hasTarget:   annotation.targets(doc_id),
             oa_hasBody:     ids_to_uris(values),
-            oa_annotatedBy: annotation.annotator,
+            oa_annotatedBy: annotator,
             #oa_annotatedAt: # Knowtator XML doesn't include this
             })
     return converted
