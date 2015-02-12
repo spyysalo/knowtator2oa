@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 
 usage = '%s FILE [FILE [...]]' % os.path.basename(__file__)
 
-DOCUMENT_ID_ROOT = 'http://pubmed.com/'
+DOCUMENT_ID_ROOT = 'http://craft.ucdenver.edu/document/PMID-'
 ANNOTATION_ID_ROOT = 'http://craft.ucdenver.edu/annotation/'
 ANNOTATOR_ID_ROOT = 'http://kabob.ucdenver.edu/annotator/'
 
@@ -94,7 +94,7 @@ class Annotation(object):
     @classmethod
     def from_element(cls, element):
         expected_elements = (t_mention, t_annotator, t_span, t_text)
-        assert not any(e for e in element if e.tag not in expected_elements)
+        assert not any(True for e in element if e.tag not in expected_elements)
         return cls(get_mention_id(element),
                    get_spans(element),
                    get_text(element),
@@ -111,7 +111,8 @@ class Mention(object):
 
     @classmethod
     def from_element(cls, element):
-        assert not any(e for e in element if e.tag != t_mclass)
+        assert not any(True for e in element if e.tag != t_mclass),\
+            'unexpected child: ' + ' '.join(['<%s>' % e.tag for e in element])
         mclass = find_only(element, t_mclass)
         return cls(element.attrib[a_id],
                    mclass.attrib[a_id],
@@ -165,7 +166,7 @@ def convert(annotations, mentions, doc_id):
             })
     return converted
 
-def process(fn):
+def parse(fn):
     tree = ET.parse(fn)
     root = tree.getroot()    
 
@@ -180,6 +181,14 @@ def process(fn):
         else:
             raise ValueError('unexpected tag %s' % element.tag)
 
+    return annotations, mentions, doc_id
+
+def process(fn):
+    try:
+        annotations, mentions, doc_id = parse(fn)
+    except:
+        print >> sys.stderr, 'Failed to parse %s' % fn
+        raise
     for c in convert(annotations, mentions, doc_id):
         print pretty_print(c)
 
