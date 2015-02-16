@@ -6,12 +6,16 @@ import os
 import sys
 import six
 import json
+import codecs
 
 # python 2.5
 import uuid
 import xml.etree.ElementTree as ET
 
 usage = '%s FILE [FILE [...]]' % os.path.basename(__file__)
+
+# Encoding to read text files in
+TEXT_ENCODING='utf-8'
 
 DOCUMENT_ID_ROOT = 'http://craft.ucdenver.edu/document/PMID-'
 ANNOTATION_ID_ROOT = 'http://craft.ucdenver.edu/annotation/'
@@ -65,6 +69,17 @@ irrelevant_slot = set([
         'section name',
 ])
 
+def argparser():
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-d', '--textdir', metavar='DIR', default=None,
+                        help='Directory with text files')
+    parser.add_argument('file', metavar='FILE', nargs='+',
+                        help='Knowtator XML file to convert')
+
+    return parser
+
 def find_only(element, tag):
     """Return the only subelement with tag(s)."""
     if isinstance(tag, six.string_types):
@@ -86,6 +101,9 @@ def get_document_id(root):
     # if source.endswith('.txt'):
     #     source = source[:-4]
     return DOCUMENT_ID_ROOT + source
+
+def get_document_source(root):
+    return root.attrib[a_source]
 
 def get_mention_id(annotation):
     mention = find_only(annotation, t_mention)
@@ -265,7 +283,30 @@ def convert(annotations, mentions, slots, doc_id):
             })
     return converted
 
-def parse(fn):
+def get_document_text(ann_fn, doc_source, options=None):
+    # Text file should be in same directory as annotation by default,
+    # other dirs can be given as options.
+    text_dir = os.path.dirname(ann_fn)
+    if options is not None and options.textdir is not None:
+        text_dir = options.textdir
+
+    fn = os.path.join(text_dir, os.path.basename(doc_source))
+    try:
+        with codecs.open(fn, encoding=TEXT_ENCODING) as f:
+            return f.read()
+    except IOError, e:
+        raise IOError('Failed to find text file for %s: %s' % (ann_fn, fn))
+
+def validate(annotation, text):
+    """Check that annotation text matches text identified by its spans."""
+    texts = []
+    for start, end in annotation.spans:
+        texts.append(text[start:end])
+    combined = ' ... '.join(texts)
+    assert combined == annotation.text, \
+        'Text mismatch:\n"%s" vs.\n"%s"' % (combined, annotation.text)
+
+def parse(fn, options=None):
     tree = ET.parse(fn)
     root = tree.getroot()    
 
@@ -282,11 +323,16 @@ def parse(fn):
         else:
             raise ValueError('unexpected tag %s' % element.tag)
 
+    doc_source = get_document_source(root)
+    doc_text = get_document_text(fn, doc_source, options)
+    for a in annotations:
+        validate(a, doc_text)
+
     return annotations, mentions, slots, doc_id
 
-def process(fn):
+def process(fn, options=None):
     try:
-        parsed = parse(fn)
+        parsed = parse(fn, options)
     except:
         print >> sys.stderr, 'Failed to parse %s' % fn
         raise
@@ -294,12 +340,10 @@ def process(fn):
         print pretty_print(c)
 
 def main(argv):
-    if len(argv) < 2:
-        print >> sys.stderr, 'Usage:', usage
-        return 1
+    args = argparser().parse_args(argv[1:])
 
-    for fn in argv[1:]:
-        process(fn)
+    for fn in args.file:
+        process(fn, args)
 
     return 0
 
