@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="11532192.txt">
+  <annotation>
+    <mention id="cellular_component_Instance_170044" />
+    <annotator id="cellular_component_Instance_130000">CCP Colorado Computational Pharmacology</annotator>
+    <span start="1878" end="1882" />
+    <spannedText>cell</spannedText>
+  </annotation>
+  <classMention id="cellular_component_Instance_170044">
+    <mentionClass id="GO:0005623">cell</mentionClass>
+  </classMention>
+</annotations>

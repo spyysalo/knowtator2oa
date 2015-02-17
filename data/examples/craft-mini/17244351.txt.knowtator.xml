@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="17244351.txt">
+  <annotation>
+    <mention id="chebi_Instance_1010195" />
+    <annotator id="chebi_Instance_90000">CCP Colorado Computational Pharmacology</annotator>
+    <span start="4503" end="4512" />
+    <spannedText>molecules</spannedText>
+  </annotation>
+  <classMention id="chebi_Instance_1010195">
+    <mentionClass id="CHEBI:23367">molecular entities</mentionClass>
+  </classMention>
+</annotations>

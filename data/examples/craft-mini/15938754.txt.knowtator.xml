@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="15938754.txt">
+  <annotation>
+    <mention id="EG_sequence_names+database_IDs_Instance_9" />
+    <annotator id="EG_sequence_names_Instance_20000">CCP Colorado Computational Pharmacology</annotator>
+    <span start="10042" end="10050" />
+    <spannedText>D6Mit374</spannedText>
+  </annotation>
+  <classMention id="EG_sequence_names+database_IDs_Instance_9">
+    <mentionClass id="Entrez Gene sequence">Entrez Gene sequence</mentionClass>
+    <hasSlotMention id="EG_sequence_names+database_IDs_Instance_11" />
+  </classMention>
+  <integerSlotMention id="EG_sequence_names+database_IDs_Instance_11">
+    <mentionSlot id="has Entrez Gene ID" />
+    <integerSlotMentionValue value="62009" />
+  </integerSlotMention>
+</annotations>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="15328533.txt">
+  <annotation>
+    <mention id="formatting_Instance_19800" />
+    <annotator id="sections-and-typography_Instance_10000">CCP Colorado Computational Pharmacology, UC Denver</annotator>
+    <span start="0" end="62" />
+    <spannedText>Regulation of Muscle Fiber Type and Running Endurance by PPARδ</spannedText>
+  </annotation>
+  <classMention id="formatting_Instance_19800">
+    <mentionClass id="section">section</mentionClass>
+    <hasSlotMention id="formatting_Instance_19801" />
+  </classMention>
+  <stringSlotMention id="formatting_Instance_19801">
+    <mentionSlot id="section name" />
+    <stringSlotMentionValue value="title" />
+  </stringSlotMention>
+</annotations>

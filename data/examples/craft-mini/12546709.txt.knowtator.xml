@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="12546709.txt">
+  <annotation>
+    <mention id="SO_Instance_1260226" />
+    <annotator id="SO_Instance_260000">CCP Colorado Computational Pharmacology</annotator>
+    <span start="4737" end="4740" />
+    <spannedText>DNA</spannedText>
+  </annotation>
+  <classMention id="SO_Instance_1260226">
+    <mentionClass id="SO:0000352">DNA</mentionClass>
+  </classMention>
+</annotations>

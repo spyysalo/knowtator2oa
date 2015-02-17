@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<annotations textSource="16507151.txt">
+  <annotation>
+    <mention id="PRO_Instance_271378" />
+    <annotator id="PRO_Instance_400000">CCP Colorado Computational Pharmacology</annotator>
+    <span start="18" end="26" />
+    <spannedText>collagen</spannedText>
+  </annotation>
+  <classMention id="PRO_Instance_271378">
+    <mentionClass id="PR:000003262">(PR) collagen alpha chain ()</mentionClass>
+  </classMention>
+</annotations>
+
