@@ -27,5 +27,6 @@ for f in "$@"; do
 	python -c 'import json; print json.dumps(json.loads(raw_input()), indent=2, separators=(",", ": "))' | \
 	egrep '^  "(error|warn|pass|total)"' | \
 	perl -pe 's/"//g' | tr '\n' ' ' | perl -pe 's/$/\n/'
+    rm "$tmp"
 done
 
