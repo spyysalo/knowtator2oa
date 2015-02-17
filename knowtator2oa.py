@@ -14,6 +14,61 @@ import xml.etree.ElementTree as ET
 
 usage = '%s FILE [FILE [...]]' % os.path.basename(__file__)
 
+# Context description that is recommended for use in systems that
+# implement the Open Annotation data model, copied Jan 2015 from
+# http://www.openannotation.org/spec/core/publishing.html
+
+oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
+    "cnt": "http://www.w3.org/2011/content#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dctypes": "http://purl.org/dc/dcmitype/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prov": "http://www.w3.org/ns/prov#",
+    "trig": "http://www.w3.org/2004/03/trix/rdfg-1/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "hasBody" :         {"@type":"@id", "@id" : "oa:hasBody"},
+    "hasTarget" :       {"@type":"@id", "@id" : "oa:hasTarget"},
+    "hasSource" :       {"@type":"@id", "@id" : "oa:hasSource"},
+    "hasSelector" :     {"@type":"@id", "@id" : "oa:hasSelector"},
+    "hasState" :        {"@type":"@id", "@id" : "oa:hasState"},
+    "hasScope" :        {"@type":"@id", "@id" : "oa:hasScope"},
+    "annotatedBy" :  {"@type":"@id", "@id" : "oa:annotatedBy"},
+    "serializedBy" : {"@type":"@id", "@id" : "oa:serializedBy"},
+    "motivatedBy" :  {"@type":"@id", "@id" : "oa:motivatedBy"},
+    "equivalentTo" : {"@type":"@id", "@id" : "oa:equivalentTo"},
+    "styledBy" :     {"@type":"@id", "@id" : "oa:styledBy"},
+    "cachedSource" : {"@type":"@id", "@id" : "oa:cachedSource"},
+    "conformsTo" :   {"@type":"@id", "@id" : "dcterms:conformsTo"},
+    "default" :      {"@type":"@id", "@id" : "oa:default"},
+    "item" :         {"@type":"@id", "@id" : "oa:item"},
+    "first":         {"@type":"@id", "@id" : "rdf:first"},
+    "rest":          {"@type":"@id", "@id" : "rdf:rest", "@container" : "@list"},
+
+    "annotatedAt" :  { "@type": "xsd:dateTimeStamp", "@id": "oa:annotatedAt" },
+    "end" :          { "@type": "xsd:nonNegativeInteger", "@id": "oa:end" },
+    "exact" :        "oa:exact",
+    "prefix" :       "oa:prefix",
+    "serializedAt" : { "@type": "xsd:dateTimeStamp", "@id": "oa:serializedAt" },
+    "start" :        { "@type": "xsd:nonNegativeInteger", "@id": "oa:start" },
+    "styleClass" :   "oa:styleClass",
+    "suffix" :       "oa:suffix",
+    "when" :         { "@type": "xsd:dateTimeStamp", "@id": "oa:when" },
+
+    "chars" :        "cnt:chars",
+    "bytes" :        "cnt:bytes",
+    "format" :       "dc:format",
+    "language" :     "dc:language",
+    "value" :        "rdf:value",
+    "label" :        "rdfs:label",
+    "name" :         "foaf:name",
+    "mbox" :         "foaf:mbox\""""
+
 # Encoding to read text files in
 TEXT_ENCODING='utf-8'
 
@@ -56,6 +111,7 @@ t_cmpxval = 'complexSlotMentionValue'
 # OA constats
 oa_id = '@id'
 oa_type = '@type'
+oa_context = '@context'
 oa_default_type = 'oa:Annotation'
 oa_hasTarget = 'hasTarget'
 oa_hasBody = 'hasBody'
@@ -259,9 +315,13 @@ def ids_to_uris(ids):
     else:
         return [id_to_uri(i) for i in ids]
 
-def pretty_print(doc):
-    return json.dumps(doc, sort_keys=True, indent=2, 
-                      separators=(',', ': '))
+def pretty_print(doc, initial_indent=0):
+    s = json.dumps(doc, sort_keys=True, indent=2, separators=(',', ': '))
+    if initial_indent == 0:
+        return s
+    else:
+        idt = ' ' * initial_indent
+        return idt + s.replace('\n', '\n'+idt)
 
 def convert(annotations, mentions, slots, doc_id):
     # There should be exactly one mention for each annotation. The two
@@ -333,20 +393,40 @@ def parse(fn, options=None):
 
     return annotations, mentions, slots, doc_id
 
-def process(fn, options=None):
+def write_header(out, context=None):
+    if context is None:
+        context = oa_recommended_context
+
+    print >> out, '''{
+  "@context": {
+    %s
+  },
+  "@graph": [''' % context
+
+def write_footer(out):
+    print >> out, '''
+  ]
+}'''
+
+def process(fn, options=None, is_first=True):
     try:
         parsed = parse(fn, options)
     except:
         print >> sys.stderr, 'Failed to parse %s' % fn
         raise
-    for c in convert(*parsed):
-        print pretty_print(c)
+    out = sys.stdout
+    for i, c in enumerate(convert(*parsed)):
+        if not is_first or i != 0:
+            out.write(',\n')
+        out.write(pretty_print(c, 5))
 
 def main(argv):
     args = argparser().parse_args(argv[1:])
 
-    for fn in args.file:
-        process(fn, args)
+    write_header(sys.stdout)
+    for i, fn in enumerate(args.file):
+        process(fn, args, i==0)
+    write_footer(sys.stdout)
 
     return 0
 
