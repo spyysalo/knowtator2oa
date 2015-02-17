@@ -68,8 +68,9 @@ oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
     "name" :         "foaf:name",
     "mbox" :         "foaf:mbox\""""
 
-# Compact OA context: minimal subset of the above
+# Compact OA context: minimal subset of the above (+oaAnn)
 compact_oa_context = """"oa": "http://www.w3.org/ns/oa#",
+    "oaAnn": "http://www.w3.org/ns/oa#Annotation",
     "hasBody" :      { "@type": "@id", "@id": "oa:hasBody" },
     "hasTarget" :    { "@type": "@id", "@id": "oa:hasTarget" },
     "annotatedBy" :  { "@type": "@id", "@id": "oa:annotatedBy" },
@@ -79,10 +80,17 @@ compact_oa_context = """"oa": "http://www.w3.org/ns/oa#",
 
 # Local prefixes for compact output
 compact_prefix_map = {
-    "http://craft.ucdenver.edu/annotation/": "ann",
-    "http://purl.obolibrary.org/obo/": "obo",
-    "http://compbio.ucdenver.edu/": "ucdenver",
-    "http://bionlp-corpora.sourceforge.net/CRAFT/1.0/": "craft",
+    'http://craft.ucdenver.edu/annotation/': 'ann',
+    'http://purl.obolibrary.org/obo/CHEBI_': 'CHEBI',
+    'http://purl.obolibrary.org/obo/CL_': 'CL',
+    'http://purl.obolibrary.org/obo/GO_': 'GO',
+    'http://purl.obolibrary.org/obo/PR_': 'PR',
+    'http://purl.obolibrary.org/obo/SO_': 'SO',
+    'http://purl.obolibrary.org/obo/NCBITaxon_': 'NCBITaxon',
+    'http://purl.obolibrary.org/obo/BFO_': 'BFO',
+    'http://purl.obolibrary.org/obo/IAO_': 'IAO',
+    'http://compbio.ucdenver.edu/': 'ucdenver',
+    'http://bionlp-corpora.sourceforge.net/CRAFT/1.0/': 'craft',
 }
 
 # Compact context: compact OA context and local prefixes
@@ -135,6 +143,7 @@ oa_id = '@id'
 oa_type = '@type'
 oa_context = '@context'
 oa_default_type = 'oa:Annotation'
+oa_compact_type = 'oaAnn'
 oa_hasTarget = 'hasTarget'
 oa_hasBody = 'hasBody'
 oa_annotatedAt = 'annotatedAt'
@@ -304,7 +313,7 @@ prefix_uri_map = {
     'PR:':    'http://purl.obolibrary.org/obo/PR_%s',
     'SO:':    'http://purl.obolibrary.org/obo/SO_%s',
     'taxonomy ID:': 'http://purl.obolibrary.org/obo/NCBITaxon_%s',
-    'has Entrez Gene ID:': 'http://kabob.ucdenver.edu/iao/eg/EG_%s_ICE',
+    'has Entrez Gene ID:': 'http://www.ncbi.nlm.nih.gov/gene/%s',
 }
 
 id_uri_map = {
@@ -373,6 +382,11 @@ def convert(annotations, mentions, slots, doc_id, options=None):
     mention_by_id = { m.id: m for m in mentions }
     slot_by_id = { s.id: s for s in slots }
 
+    if not options or not options.compact:
+        oa_type_value = oa_default_type
+    else:
+        oa_type_value = oa_compact_type
+
     converted = []
     for annotation in annotations:
         mention = mention_by_id[annotation.mention_id]
@@ -381,7 +395,7 @@ def convert(annotations, mentions, slots, doc_id, options=None):
         annotator = annotator_mapping.get(annotator, annotator)
         converted.append({
             oa_id:          annotation.id,
-            oa_type:        oa_default_type,
+            oa_type:        oa_type_value,
             oa_hasTarget:   annotation.targets(doc_id),
             oa_hasBody:     ids_to_uris(values),
             oa_annotatedBy: annotator,
