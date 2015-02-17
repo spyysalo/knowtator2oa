@@ -17,7 +17,6 @@ usage = '%s FILE [FILE [...]]' % os.path.basename(__file__)
 # Context description that is recommended for use in systems that
 # implement the Open Annotation data model, copied Jan 2015 from
 # http://www.openannotation.org/spec/core/publishing.html
-
 oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
     "cnt": "http://www.w3.org/2011/content#",
     "dc": "http://purl.org/dc/elements/1.1/",
@@ -69,6 +68,28 @@ oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
     "name" :         "foaf:name",
     "mbox" :         "foaf:mbox\""""
 
+# Compact OA context: minimal subset of the above
+compact_oa_context = """"oa": "http://www.w3.org/ns/oa#",
+    "hasBody" :      { "@type": "@id", "@id": "oa:hasBody" },
+    "hasTarget" :    { "@type": "@id", "@id": "oa:hasTarget" },
+    "annotatedBy" :  { "@type": "@id", "@id": "oa:annotatedBy" },
+    "serializedBy" : { "@type": "@id", "@id": "oa:serializedBy" },
+    "annotatedAt" :  { "@type": "xsd:dateTimeStamp", "@id": "oa:annotatedAt" },
+    "serializedAt" : { "@type": "xsd:dateTimeStamp", "@id": "oa:serializedAt" }"""
+
+# Local prefixes for compact output
+compact_prefix_map = {
+    "http://craft.ucdenver.edu/annotation/": "ann",
+    "http://purl.obolibrary.org/obo/": "obo",
+    "http://compbio.ucdenver.edu/": "ucdenver"
+}
+
+# Compact context: compact OA context and local prefixes
+compact_context = ',\n'.join(
+    [compact_oa_context] +
+    ['    "%s": "%s"' % (p, f) for f, p in compact_prefix_map.items()]
+    )
+
 # Encoding to read text files in
 TEXT_ENCODING='utf-8'
 
@@ -78,8 +99,8 @@ ANNOTATOR_ID_ROOT = 'http://kabob.ucdenver.edu/annotator/'
 
 # Mapping to resolvable annotator URIs
 annotator_mapping = {
-    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology':  'http://compbio.ucdenver.edu/Hunter_lab/',
-    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology,UCDenver':  'http://compbio.ucdenver.edu/Hunter_lab/',
+    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology':  'http://compbio.ucdenver.edu/Hunter_lab',
+    'http://kabob.ucdenver.edu/annotator/CCPColoradoComputationalPharmacology,UCDenver':  'http://compbio.ucdenver.edu/Hunter_lab',
 }
 
 # Attribute name constants
@@ -131,6 +152,8 @@ def argparser():
     import argparse
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-c', '--compact', action='store_true', default=False,
+                        help='Compact output')
     parser.add_argument('-d', '--textdir', metavar='DIR', default=None,
                         help='Directory with text files')
     parser.add_argument('file', metavar='FILE', nargs='+',
@@ -323,7 +346,19 @@ def pretty_print(doc, initial_indent=0):
         idt = ' ' * initial_indent
         return idt + s.replace('\n', '\n'+idt)
 
-def convert(annotations, mentions, slots, doc_id):
+def compact_values(object, prefix_map=None):
+    if prefix_map is None:
+        prefix_map = compact_prefix_map
+    compacted = {}
+    for key, value in object.items():
+        for pref, short in compact_prefix_map.items():
+            if value.startswith(pref):
+                value = '%s:%s' % (short, value[len(pref):])
+                break
+        compacted[key] = value
+    return compacted
+
+def convert(annotations, mentions, slots, doc_id, options=None):
     # There should be exactly one mention for each annotation. The two
     # are connected by annotation.mention_id == mention.id
     assert len(annotations) == len(mentions)
@@ -344,6 +379,8 @@ def convert(annotations, mentions, slots, doc_id):
             oa_annotatedBy: annotator,
             #oa_annotatedAt: # Knowtator XML doesn't include this
             })
+    if options and options.compact:
+        converted = [compact_values(c) for c in converted]
     return converted
 
 def get_document_text(ann_fn, doc_source, options=None):
@@ -393,9 +430,12 @@ def parse(fn, options=None):
 
     return annotations, mentions, slots, doc_id
 
-def write_header(out, context=None):
+def write_header(out, options=None, context=None):
     if context is None:
-        context = oa_recommended_context
+        if options is None or not options.compact:
+            context = oa_recommended_context
+        else:
+            context = compact_context
 
     print >> out, '''{
   "@context": {
@@ -415,7 +455,7 @@ def process(fn, options=None, is_first=True):
         print >> sys.stderr, 'Failed to parse %s' % fn
         raise
     out = sys.stdout
-    for i, c in enumerate(convert(*parsed)):
+    for i, c in enumerate(convert(*parsed, options=options)):
         if not is_first or i != 0:
             out.write(',\n')
         out.write(pretty_print(c, 5))
@@ -423,7 +463,7 @@ def process(fn, options=None, is_first=True):
 def main(argv):
     args = argparser().parse_args(argv[1:])
 
-    write_header(sys.stdout)
+    write_header(sys.stdout, args)
     for i, fn in enumerate(args.file):
         process(fn, args, i==0)
     write_footer(sys.stdout)
