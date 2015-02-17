@@ -81,7 +81,8 @@ compact_oa_context = """"oa": "http://www.w3.org/ns/oa#",
 compact_prefix_map = {
     "http://craft.ucdenver.edu/annotation/": "ann",
     "http://purl.obolibrary.org/obo/": "obo",
-    "http://compbio.ucdenver.edu/": "ucdenver"
+    "http://compbio.ucdenver.edu/": "ucdenver",
+    "http://bionlp-corpora.sourceforge.net/CRAFT/1.0/": "craft",
 }
 
 # Compact context: compact OA context and local prefixes
@@ -93,7 +94,7 @@ compact_context = ',\n'.join(
 # Encoding to read text files in
 TEXT_ENCODING='utf-8'
 
-DOCUMENT_ID_ROOT = 'http://craft.ucdenver.edu/document/PMID-'
+DOCUMENT_ID_ROOT = 'http://bionlp-corpora.sourceforge.net/CRAFT/1.0/'
 ANNOTATION_ID_ROOT = 'http://craft.ucdenver.edu/annotation/'
 ANNOTATOR_ID_ROOT = 'http://kabob.ucdenver.edu/annotator/'
 
