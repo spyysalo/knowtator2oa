@@ -55,6 +55,8 @@ t_cmpxval = 'complexSlotMentionValue'
 
 # OA constats
 oa_id = '@id'
+oa_type = '@type'
+oa_default_type = 'oa:Annotation'
 oa_hasTarget = 'hasTarget'
 oa_hasBody = 'hasBody'
 oa_annotatedAt = 'annotatedAt'
@@ -276,6 +278,7 @@ def convert(annotations, mentions, slots, doc_id):
         annotator = annotator_mapping.get(annotator, annotator)
         converted.append({
             oa_id:          annotation.id,
+            oa_type:        oa_default_type,
             oa_hasTarget:   annotation.targets(doc_id),
             oa_hasBody:     ids_to_uris(values),
             oa_annotatedBy: annotator,
