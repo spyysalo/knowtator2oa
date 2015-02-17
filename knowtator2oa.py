@@ -307,7 +307,7 @@ prefix_uri_map = {
 }
 
 id_uri_map = {
-    'independent_continuant': 'purl.obolibrary.org/obo/BFO_0000004',
+    'independent_continuant': 'http://purl.obolibrary.org/obo/BFO_0000004',
     # NCBI taxonomy non-specific
     'taxonomic_rank': 'http://purl.obolibrary.org/obo/NCBITaxon_taxonomic_rank',
     'species': 'http://purl.obolibrary.org/obo/NCBITaxon_species',
