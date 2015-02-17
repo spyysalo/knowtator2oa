@@ -346,16 +346,23 @@ def pretty_print(doc, initial_indent=0):
         idt = ' ' * initial_indent
         return idt + s.replace('\n', '\n'+idt)
 
+def compact(s, prefix_map):
+    for pref, short in prefix_map.items():
+        if s.startswith(pref):
+            return '%s:%s' % (short, s[len(pref):])
+    return s
+
 def compact_values(object, prefix_map=None):
     if prefix_map is None:
         prefix_map = compact_prefix_map
     compacted = {}
-    for key, value in object.items():
-        for pref, short in compact_prefix_map.items():
-            if value.startswith(pref):
-                value = '%s:%s' % (short, value[len(pref):])
-                break
-        compacted[key] = value
+    for key, val in object.items():
+        if isinstance(val, six.string_types):
+            val = compact(val, prefix_map)
+        else:
+            assert isinstance(val, list)
+            val = [compact(v, prefix_map) for v in val]
+        compacted[key] = val
     return compacted
 
 def convert(annotations, mentions, slots, doc_id, options=None):
