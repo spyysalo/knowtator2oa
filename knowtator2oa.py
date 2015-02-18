@@ -17,7 +17,7 @@ usage = '%s FILE [FILE [...]]' % os.path.basename(__file__)
 # Context description that is recommended for use in systems that
 # implement the Open Annotation data model, copied Jan 2015 from
 # http://www.openannotation.org/spec/core/publishing.html
-oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
+oa_recommended_context = """\"oa": "http://www.w3.org/ns/oa#",
     "cnt": "http://www.w3.org/2011/content#",
     "dc": "http://purl.org/dc/elements/1.1/",
     "dcterms": "http://purl.org/dc/terms/",
@@ -69,7 +69,7 @@ oa_recommended_context = """"oa": "http://www.w3.org/ns/oa#",
     "mbox" :         "foaf:mbox\""""
 
 # Compact OA context: minimal subset of the above (+oaAnn)
-compact_oa_context = """"oa": "http://www.w3.org/ns/oa#",
+compact_oa_context = """\"oa": "http://www.w3.org/ns/oa#",
     "oaAnn": "http://www.w3.org/ns/oa#Annotation",
     "hasBody" :      { "@type": "@id", "@id": "oa:hasBody" },
     "hasTarget" :    { "@type": "@id", "@id": "oa:hasTarget" },
