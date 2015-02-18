@@ -8,6 +8,8 @@ import six
 import json
 import codecs
 import hashlib
+import urlparse
+import re
 
 # python 2.5
 import uuid
@@ -74,10 +76,14 @@ compact_oa_context = """\"oa": "http://www.w3.org/ns/oa#",
     "oaAnn": "http://www.w3.org/ns/oa#Annotation",
     "hasBody" :      { "@type": "@id", "@id": "oa:hasBody" },
     "hasTarget" :    { "@type": "@id", "@id": "oa:hasTarget" },
+    "hasSource" :    { "@type": "@id", "@id": "oa:hasSource" },
+    "hasSelector" :  { "@type": "@id", "@id": "oa:hasSelector" },
     "annotatedBy" :  { "@type": "@id", "@id": "oa:annotatedBy" },
     "serializedBy" : { "@type": "@id", "@id": "oa:serializedBy" },
     "annotatedAt" :  { "@type": "xsd:dateTimeStamp", "@id": "oa:annotatedAt" },
-    "serializedAt" : { "@type": "xsd:dateTimeStamp", "@id": "oa:serializedAt" }"""
+    "serializedAt" : { "@type": "xsd:dateTimeStamp", "@id": "oa:serializedAt" },
+    "start" :        { "@type": "xsd:nonNegativeInteger", "@id": "oa:start" },
+    "end" :          { "@type": "xsd:nonNegativeInteger", "@id": "oa:end" }"""
 
 # Local prefixes for compact output
 compact_prefix_map = {
@@ -150,6 +156,10 @@ oa_hasTarget = 'hasTarget'
 oa_hasBody = 'hasBody'
 oa_annotatedAt = 'annotatedAt'
 oa_annotatedBy = 'annotatedBy'
+oa_hasSource = 'hasSource'
+oa_hasSelector = 'hasSelector'
+oa_start = 'start'
+oa_end = 'end'
 
 # IDs of slots to discard as irrelevant (CRAFT-specific)
 irrelevant_slot = set([
@@ -168,6 +178,8 @@ def argparser():
                         help='Compact output')
     parser.add_argument('-d', '--textdir', metavar='DIR', default=None,
                         help='Directory with text files')
+    parser.add_argument('-e', '--expand-frag', action='store_true',
+                        default=False, help='Expand fragment selectors')
     parser.add_argument('-l', '--limit-id', metavar='N', type=int, default=10,
                         help='Limit annotation IDs to N characters')
     parser.add_argument('-r', '--random-ids', action='store_true',
@@ -369,18 +381,52 @@ def compact(s, prefix_map):
             return '%s:%s' % (short, s[len(pref):])
     return s
 
-def compact_values(object, prefix_map=None):
+def compact_values(document, prefix_map=None):
     if prefix_map is None:
         prefix_map = compact_prefix_map
     compacted = {}
-    for key, val in object.items():
+    for key, val in document.items():
         if isinstance(val, six.string_types):
             val = compact(val, prefix_map)
-        else:
-            assert isinstance(val, list)
+        elif isinstance(val, list):
             val = [compact(v, prefix_map) for v in val]
+        else:
+            pass # TODO recurse into objects
         compacted[key] = val
     return compacted
+
+def parse_frag(frag):
+    # parse rfc5147 text/plain chracter range fragment identifier
+    # (TODO others)
+    m = re.match(r'^char=(\d+),(\d+)$', frag)
+    if not m:
+        raise ValueError('failed to parse fragment %s' % frag)
+    start, end = m.groups()
+    try:
+        return int(start), int(end)
+    except ValueError:
+        raise ValueError('failed to parse fragment %s' % frag)
+
+def expand_fragment(target):
+    url, frag = urlparse.urldefrag(target)
+    start, end = parse_frag(frag)
+    return {
+        oa_hasSource : url,
+        oa_hasSelector : {
+            oa_start: start,
+            oa_end: end
+        },
+    }
+
+def expand_fragments(document):
+    tgt = document[oa_hasTarget]
+    if isinstance(tgt, six.string_types):
+        tgt = expand_fragment(tgt)
+    else:
+        assert isinstance(tgt, list)
+        tgt = [expand_gragment(t) for t in tgt]
+    document[oa_hasTarget] = tgt
+    return document
 
 def sha1(s):
     return hashlib.sha1(s).hexdigest()
@@ -423,6 +469,8 @@ def convert(annotations, mentions, slots, doc_id, options=None):
             }
         document[oa_id] = create_id(document, options)
         converted.append(document)
+    if options and options.expand_frag:
+        converted = [expand_fragments(c) for c in converted]
     if options and options.compact:
         converted = [compact_values(c) for c in converted]
     return converted
