@@ -168,7 +168,7 @@ def argparser():
                         help='Compact output')
     parser.add_argument('-d', '--textdir', metavar='DIR', default=None,
                         help='Directory with text files')
-    parser.add_argument('-l', '--limit-id', metavar='N', type=int, default=None,
+    parser.add_argument('-l', '--limit-id', metavar='N', type=int, default=10,
                         help='Limit annotation IDs to N characters')
     parser.add_argument('-r', '--random-ids', action='store_true',
                         default=False, help='Random UUIDs')
