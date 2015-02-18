@@ -424,7 +424,7 @@ def expand_fragments(document):
         tgt = expand_fragment(tgt)
     else:
         assert isinstance(tgt, list)
-        tgt = [expand_gragment(t) for t in tgt]
+        tgt = [expand_fragment(t) for t in tgt]
     document[oa_hasTarget] = tgt
     return document
 
