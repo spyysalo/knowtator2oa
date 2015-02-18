@@ -216,7 +216,6 @@ def get_annotator(annotation):
 
 class Annotation(object):
     def __init__(self, mention_id, spans, text, annotator):
-        self.id = ANNOTATION_ID_ROOT + str(uuid.uuid4()) # random uuid
         self.mention_id = mention_id
         self.spans = spans
         self.text = text
@@ -393,14 +392,15 @@ def convert(annotations, mentions, slots, doc_id, options=None):
         values = mention.values(slot_by_id)
         annotator = annotation.annotator
         annotator = annotator_mapping.get(annotator, annotator)
-        converted.append({
-            oa_id:          annotation.id,
+        document = {
             oa_type:        oa_type_value,
             oa_hasTarget:   annotation.targets(doc_id),
             oa_hasBody:     ids_to_uris(values),
             oa_annotatedBy: annotator,
             #oa_annotatedAt: # Knowtator XML doesn't include this
-            })
+            }
+        document[oa_id] = ANNOTATION_ID_ROOT + str(uuid.uuid4()) # random uuid
+        converted.append(document)
     if options and options.compact:
         converted = [compact_values(c) for c in converted]
     return converted
