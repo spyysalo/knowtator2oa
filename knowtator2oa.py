@@ -7,6 +7,7 @@ import sys
 import six
 import json
 import codecs
+import hashlib
 
 # python 2.5
 import uuid
@@ -166,6 +167,10 @@ def argparser():
                         help='Compact output')
     parser.add_argument('-d', '--textdir', metavar='DIR', default=None,
                         help='Directory with text files')
+    parser.add_argument('-l', '--limit-id', metavar='N', type=int, default=None,
+                        help='Limit annotation IDs to N characters')
+    parser.add_argument('-r', '--random-ids', action='store_true',
+                        default=False, help='Random UUIDs')
     parser.add_argument('file', metavar='FILE', nargs='+',
                         help='Knowtator XML file to convert')
 
@@ -374,6 +379,20 @@ def compact_values(object, prefix_map=None):
         compacted[key] = val
     return compacted
 
+def sha1(s):
+    return hashlib.sha1(s).hexdigest()
+
+def create_id(document, options=None):
+    if options is not None and not options.random_ids:
+        # TODO: consider expanding JSON-LD
+        serialized = json.dumps(document, separators=(',',':'), sort_keys=True)
+        id_ = sha1(serialized)
+    else:
+        id_ = str(uuid.uuid4()) # random uuid as default
+    if options is not None and options.limit_id is not None:
+        id_ = id_[:options.limit_id]
+    return ANNOTATION_ID_ROOT + id_
+
 def convert(annotations, mentions, slots, doc_id, options=None):
     # There should be exactly one mention for each annotation. The two
     # are connected by annotation.mention_id == mention.id
@@ -399,7 +418,7 @@ def convert(annotations, mentions, slots, doc_id, options=None):
             oa_annotatedBy: annotator,
             #oa_annotatedAt: # Knowtator XML doesn't include this
             }
-        document[oa_id] = ANNOTATION_ID_ROOT + str(uuid.uuid4()) # random uuid
+        document[oa_id] = create_id(document, options)
         converted.append(document)
     if options and options.compact:
         converted = [compact_values(c) for c in converted]
