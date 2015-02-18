@@ -90,6 +90,7 @@ compact_prefix_map = {
     'http://purl.obolibrary.org/obo/NCBITaxon_': 'NCBITaxon',
     'http://purl.obolibrary.org/obo/BFO_': 'BFO',
     'http://purl.obolibrary.org/obo/IAO_': 'IAO',
+    'http://www.ncbi.nlm.nih.gov/gene/': 'NCBIGene',
     'http://compbio.ucdenver.edu/': 'ucdenver',
     'http://bionlp-corpora.sourceforge.net/CRAFT/1.0/': 'craft',
 }
@@ -362,7 +363,9 @@ def pretty_print(doc, initial_indent=0):
 
 def compact(s, prefix_map):
     for pref, short in prefix_map.items():
-        if s.startswith(pref):
+        if s == pref:
+            return short
+        elif s.startswith(pref):
             return '%s:%s' % (short, s[len(pref):])
     return s
 
