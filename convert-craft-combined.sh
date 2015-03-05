@@ -4,8 +4,6 @@
 # Annotation format, combining annotations of the various upper-level
 # semantic types.
 
-# NOTE: does *not* convert the "sections-and-typography" data.
-
 set -e
 set -u
 
@@ -35,10 +33,9 @@ fi
 
 mkdir "$outdir"
 
-for f in $(ls "$indir"/{chebi,cl,entrezgene,go_bpmf,go_cc,ncbitaxon,pr,so} | \
+for f in $(ls "$indir"/{chebi,cl,entrezgene,go_bpmf,go_cc,ncbitaxon,pr,so,sections-and-typography} | \
     egrep '\.xml$' | sort | uniq); do
     o="$outdir"/$(basename "$f" .txt.knowtator.xml).jsonld
     echo "Converting $f to $o ... " >&2
-    ./knowtator2oa.py -d "$textdir" \
-	"$indir"/{chebi,cl,entrezgene,go_bpmf,go_cc,ncbitaxon,pr,so}/$f > "$o"
+    ./knowtator2oa.py -d "$textdir" "$indir"/{chebi,cl,entrezgene,go_bpmf,go_cc,ncbitaxon,pr,so,sections-and-typography}/$f > "$o"
 done
