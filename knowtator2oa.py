@@ -342,11 +342,11 @@ id_uri_map = {
     'phylum': 'http://purl.obolibrary.org/obo/NCBITaxon_phylum',
     'kingdom': 'http://purl.obolibrary.org/obo/NCBITaxon_kingdom',
     # Typography
-    'bold': 'http://craft.ucdenver.edu/iao/bold',
-    'italic': 'http://craft.ucdenver.edu/iao/italic',
-    'underline': 'http://craft.ucdenver.edu/iao/underline',
-    'sub': 'http://craft.ucdenver.edu/iao/sub',
-    'sup': 'http://craft.ucdenver.edu/iao/sup',
+    'bold': 'http://www.w3.org/TR/html/#b',
+    'italic': 'http://www.w3.org/TR/html/#i',
+    'underline': 'http://www.w3.org/TR/html/#u',
+    'sub': 'http://www.w3.org/TR/html/#sup',
+    'sup': 'http://www.w3.org/TR/html/#sub',
     'section': 'http://purl.obolibrary.org/obo/IAO_0000314',
 }
 
